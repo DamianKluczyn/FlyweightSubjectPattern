@@ -4,15 +4,16 @@ from abc import ABC, abstractmethod
 
 class IFlyweight(ABC):
     @abstractmethod
-    def getState(self):
+    def getState(self, unique_state) -> str:
         pass
 
 class Flyweight(IFlyweight):
     def __init__(self, shared_state: str) -> None:
         self._shared_state = shared_state
+        print("Flyweight innit")
 
-    def getState(self) -> str:
-        return self._shared_state
+    def getState(self, unique_state) -> str:
+        return f"Shared state: {self._shared_state}, Unique state: {unique_state}"
 
 class FlyweightFactory:
 
@@ -28,55 +29,63 @@ class FlyweightFactory:
         key = self.getKey(shared_state)
         if not self._flyweights.get(key):
             print("Creating new flyweight")
-            self._flyweights[key] = Flyweight(shared_state)
+            self._flyweights[key] = Flyweight(key)
         else:
             print("Using existing flyweight")
 
         return self._flyweights[key]
 
-def add_immigrant_to_database(factory: FlyweightFactory, first_name: str, last_name: str, latitude: str, longitude: str) -> None:
-    real_subject = RealSubject()
-    flyweight = factory.get_flyweight([first_name])
-    flyweight.operaion([last_name, latitude, longitude])
-
 
 class Subject(ABC):
     @abstractmethod
-    def request(self) -> None:
+    def getState(self) -> None:
         pass
 
 class RealSubject(Subject):
-    def __init__(self) -> None:
-        self._first_name = ""
-        self._last_name = ""
-        self._latitude = ""
-        self._longitude = ""
-
-    def setData(self, proxy):
-
-    def getNonUniqueState(self) -> str:
-        return self._first_name
-    def getUniqueState(self) -> str:
-        return [self._last_name, self._latitude, self._latitude]
-
-class Proxy(Subject):
-    def __init__(self, first_name: str,last_name: str, latitude: str, longitude: str) -> None:
-        self._first_name = first_name.lower().capitalize()
-        self._last_name = last_name.lower().capitalize()
+    def __init__(self, first_name: Flyweight, last_name: str, latitude: str, longitude: str) -> None:
+        self._first_name = first_name
+        self._last_name = last_name
         self._latitude = latitude
         self._longitude = longitude
-        self._real_subject = RealSubject()
+        print("RealSubject innit")
 
-    def checkData(self) -> None:
-        if self.check_access():
-            self._real_subject.request()
-            self.log_access()
+    def getState(self) -> str:
+        return f"Shared state: {self._first_name}, Unique state: {self._last_name, self._latitude, self._longitude}"
 
 
-def client_code(subject: Subject) -> None:
-    subject.request()
+
+class Proxy(Subject):
+    def __init__(self, immigrant: list) -> None:
+        self._first_name = immigrant[0].lower().capitalize()
+        self._last_name = immigrant[1].lower().capitalize()
+        self._latitude = immigrant[2]
+        self._longitude = immigrant[3]
+        self._real_subject = ""
+
+    def addSubject(self, factory: FlyweightFactory) -> None:
+        print("Proxy add subject")
+        flyweight = factory.getFlyweight([self._first_name])
+        flyweight.getState([self._last_name, self._latitude, self._longitude])
+        self._real_subject = RealSubject(flyweight, self._last_name, self._latitude, self._longitude)
+
+    def getState(self) -> str:
+        return self._real_subject.getState()
+
+def ImmigrantInfo():
+    first_name = input("Imie: ")
+    last_name = input("Nazwisko: ")
+    latitude = input("Szerokosc geograficzna: ")
+    longitude = input("Wysokosc geograficzna: ")
+    return [first_name, last_name, latitude, longitude]
+
+def SaveToFile(data: Proxy):
+    with open(".\\Dane.txt", "a") as f:
+        f.write(data.getState, "\n")
+
+
 
 if __name__ == "__main__":
-    real_subject = RealSubject()
-    proxy = Proxy(real_subject)
-    client_code(proxy)
+    factory = FlyweightFactory({})
+    while True:
+        proxy = Proxy(ImmigrantInfo())
+        proxy.addSubject(factory)
