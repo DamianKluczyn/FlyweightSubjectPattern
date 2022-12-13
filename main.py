@@ -1,4 +1,3 @@
-import json
 from typing import Dict
 from abc import ABC, abstractmethod
 
@@ -42,7 +41,7 @@ class Subject(ABC):
         pass
 
 class RealSubject(Subject):
-    def __init__(self, first_name: Flyweight, last_name: str, latitude: str, longitude: str) -> None:
+    def __init__(self, first_name: Flyweight, last_name: str, latitude: float, longitude: float) -> None:
         self._first_name = first_name
         self._last_name = last_name
         self._latitude = latitude
@@ -67,6 +66,7 @@ class Proxy(Subject):
         flyweight = factory.getFlyweight([self._first_name])
         flyweight.getState([self._last_name, self._latitude, self._longitude])
         self._real_subject = RealSubject(flyweight, self._last_name, self._latitude, self._longitude)
+        SaveToFile(self);
 
     def getState(self) -> str:
         return self._real_subject.getState()
@@ -74,13 +74,13 @@ class Proxy(Subject):
 def ImmigrantInfo():
     first_name = input("Imie: ")
     last_name = input("Nazwisko: ")
-    latitude = input("Szerokosc geograficzna: ")
-    longitude = input("Wysokosc geograficzna: ")
+    latitude = float(input("Szerokosc geograficzna: "))
+    longitude = float(input("Wysokosc geograficzna: "))
     return [first_name, last_name, latitude, longitude]
 
 def SaveToFile(data: Proxy):
     with open(".\\Dane.txt", "a") as f:
-        f.write(data.getState, "\n")
+        f.write(data.getState() + "\n")
 
 
 
